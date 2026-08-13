@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r backend_requirements.txt
 
 # Copy backend files and auxiliary models/data/src
 COPY backend /workspace/backend
-COPY src /workspace/src
+COPY ml /workspace/ml
 COPY models /workspace/models
 COPY data /workspace/data
 

@@ -5,6 +5,13 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Prevent silent SQLite fallback in production environments
+if settings.ENVIRONMENT == "production" and settings.DATABASE_URL.startswith("sqlite"):
+    raise RuntimeError(
+        "CRITICAL DATABASE ERROR: Production environment is configured to run on SQLite. "
+        "SQLite is not allowed in production to prevent silent data fallbacks. Configure DATABASE_URL to use PostgreSQL."
+    )
+
 # Determine database engine arguments (enable multi-thread checks for SQLite only)
 engine_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):

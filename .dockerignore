@@ -1,0 +1,12 @@
+.git/
+.gitignore
+.dockerignore
+node_modules/
+frontend/dist/
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+*.log
+.env
+reports/

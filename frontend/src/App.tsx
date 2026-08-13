@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import Layout from './layouts/Layout';
 import Dashboard from './pages/Dashboard';
-import Assessment from './pages/Assessment';
-import History from './pages/History';
-import Analytics from './pages/Analytics';
+import RiskAssessment from './pages/RiskAssessment';
+import PredictionResult from './pages/PredictionResult';
+import PatientHistory from './pages/PatientHistory';
+import ModelAnalytics from './pages/ModelAnalytics';
+import type { PredictionResponse } from './types';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   
   // Drill-down audit state (passes selected patient from Dashboard to History detail panel)
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
+
+  // Evaluation outcome state
+  const [predictionResult, setPredictionResult] = useState<PredictionResponse | null>(null);
 
   const handleViewPatientDetails = (patientId: number) => {
     setSelectedPatientId(patientId);
@@ -18,6 +23,16 @@ export const App: React.FC = () => {
 
   const handleClearSelectedPatient = () => {
     setSelectedPatientId(null);
+  };
+
+  const handlePredictionResult = (result: PredictionResponse) => {
+    setPredictionResult(result);
+    setActiveTab('result');
+  };
+
+  const handleResetPrediction = () => {
+    setPredictionResult(null);
+    setActiveTab('predict');
   };
 
   return (
@@ -30,18 +45,22 @@ export const App: React.FC = () => {
       )}
       
       {activeTab === 'predict' && (
-        <Assessment />
+        <RiskAssessment onPredictionResult={handlePredictionResult} />
+      )}
+
+      {activeTab === 'result' && predictionResult && (
+        <PredictionResult result={predictionResult} onReset={handleResetPrediction} />
       )}
       
       {activeTab === 'history' && (
-        <History 
+        <PatientHistory 
           selectedPatientId={selectedPatientId} 
           onClearSelectedPatient={handleClearSelectedPatient} 
         />
       )}
       
       {activeTab === 'analytics' && (
-        <Analytics />
+        <ModelAnalytics />
       )}
     </Layout>
   );

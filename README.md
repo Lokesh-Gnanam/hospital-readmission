@@ -94,7 +94,7 @@ Requires Docker Desktop to be installed and active:
 4. Configure your `.env` in the root folder (by default, it will fall back to a local SQLite database `readmissions.db` if PostgreSQL is not configured).
 5. Start the FastAPI development server:
    ```bash
-   uvicorn app.main:app --reload
+   python -m uvicorn app.main:app --reload
    ```
    The backend will be available at `http://localhost:8000`.
 

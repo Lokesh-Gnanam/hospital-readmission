@@ -4,7 +4,7 @@ import type { ModelInfo } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
 
-export const Analytics: React.FC = () => {
+export const ModelAnalytics: React.FC = () => {
   const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -209,4 +209,4 @@ export const Analytics: React.FC = () => {
     </div>
   );
 };
-export default Analytics;
+export default ModelAnalytics;

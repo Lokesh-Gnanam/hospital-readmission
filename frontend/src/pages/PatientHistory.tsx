@@ -8,7 +8,7 @@ interface HistoryProps {
   onClearSelectedPatient: () => void;
 }
 
-export const History: React.FC<HistoryProps> = ({ selectedPatientId, onClearSelectedPatient }) => {
+export const PatientHistory: React.FC<HistoryProps> = ({ selectedPatientId, onClearSelectedPatient }) => {
   const [patients, setPatients] = useState<PatientResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -261,4 +261,4 @@ export const History: React.FC<HistoryProps> = ({ selectedPatientId, onClearSele
     </div>
   );
 };
-export default History;
+export default PatientHistory;
