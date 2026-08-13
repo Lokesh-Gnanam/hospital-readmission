@@ -1,0 +1,20 @@
+Class Imbalance Handling Method Comparison
+==========================================
+
+Method: No Handling
+  Recall:    0.5079 (std: 0.0102)
+  Precision: 0.5853 (std: 0.0122)
+  F1:        0.5438 (std: 0.0099)
+  PR-AUC:    0.6068 (std: 0.0090)
+
+Method: Class Weighting
+  Recall:    0.5687 (std: 0.0103)
+  Precision: 0.5705 (std: 0.0079)
+  F1:        0.5696 (std: 0.0085)
+  PR-AUC:    0.6087 (std: 0.0072)
+
+Method: SMOTE
+  Recall:    0.5232 (std: 0.0112)
+  Precision: 0.5830 (std: 0.0118)
+  F1:        0.5515 (std: 0.0112)
+  PR-AUC:    0.6067 (std: 0.0076)

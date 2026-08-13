@@ -1,0 +1,39 @@
+FINAL HELD-OUT TEST EVALUATION REPORT
+=====================================
+Model version: 1.0.0
+Operating Threshold: 0.30
+Accuracy: 0.5200
+Precision: 0.4945
+Recall: 0.9341
+F1-Score: 0.6466
+ROC-AUC: 0.6493
+PR-AUC: 0.6222
+
+Confusion Matrix:
+  True Negatives (TN):  404
+  False Positives (FP): 2245
+  False Negatives (FN): 155
+  True Positives (TP):  2196
+
+Classification Report:
+              precision    recall  f1-score   support
+
+  No Readmit       0.72      0.15      0.25      2649
+     Readmit       0.49      0.93      0.65      2351
+
+    accuracy                           0.52      5000
+   macro avg       0.61      0.54      0.45      5000
+weighted avg       0.62      0.52      0.44      5000
+
+
+PHASE 15: RISK STRATIFICATION PROTOTYPE
+=======================================
+Risk Category definitions (Hackathon Prototype thresholds, NOT clinically validated):
+  - LOW:       probability < 0.20
+  - MODERATE:  0.20 <= probability < 0.30
+  - HIGH:      probability >= 0.30
+
+risk_category  total_patients  readmitted_patients  average_probability  readmission_rate  percentage_of_total_patients
+          LOW              71                   16             0.155399         22.535211                          1.42
+     MODERATE             488                  139             0.261394         28.483607                          9.76
+         HIGH            4441                 2196             0.499978         49.448322                         88.82

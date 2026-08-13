@@ -1,0 +1,44 @@
+Baseline Models Cross-Validation Results
+=========================================
+
+Model: Logistic Regression
+  mean_accuracy: 0.6095
+  std_accuracy: 0.0052
+  mean_precision: 0.6295
+  std_precision: 0.0100
+  mean_recall: 0.4120
+  std_recall: 0.0097
+  mean_f1: 0.4979
+  std_f1: 0.0075
+  mean_roc_auc: 0.6440
+  std_roc_auc: 0.0120
+  mean_pr_auc: 0.6226
+  std_pr_auc: 0.0102
+
+Model: Random Forest
+  mean_accuracy: 0.6047
+  std_accuracy: 0.0050
+  mean_precision: 0.5880
+  std_precision: 0.0071
+  mean_recall: 0.5326
+  std_recall: 0.0067
+  mean_f1: 0.5589
+  std_f1: 0.0041
+  mean_roc_auc: 0.6368
+  std_roc_auc: 0.0054
+  mean_pr_auc: 0.6054
+  std_pr_auc: 0.0075
+
+Model: XGBoost
+  mean_accuracy: 0.5993
+  std_accuracy: 0.0095
+  mean_precision: 0.5853
+  std_precision: 0.0122
+  mean_recall: 0.5079
+  std_recall: 0.0102
+  mean_f1: 0.5438
+  std_f1: 0.0099
+  mean_roc_auc: 0.6339
+  std_roc_auc: 0.0125
+  mean_pr_auc: 0.6068
+  std_pr_auc: 0.0090

@@ -1,0 +1,61 @@
+==================================================
+          PHASE 1 — DATA AUDIT REPORT             
+==================================================
+1. Number of rows: 25000
+2. Number of columns: 17
+3. Column names: age, time_in_hospital, n_lab_procedures, n_procedures, n_medications, n_outpatient, n_inpatient, n_emergency, medical_specialty, diag_1, diag_2, diag_3, glucose_test, A1Ctest, change, diabetes_med, readmitted
+
+4. Data Types:
+   - age: object
+   - time_in_hospital: int64
+   - n_lab_procedures: int64
+   - n_procedures: int64
+   - n_medications: int64
+   - n_outpatient: int64
+   - n_inpatient: int64
+   - n_emergency: int64
+   - medical_specialty: object
+   - diag_1: object
+   - diag_2: object
+   - diag_3: object
+   - glucose_test: object
+   - A1Ctest: object
+   - change: object
+   - diabetes_med: object
+   - readmitted: object
+
+5. Missing Values:
+   Standard NaNs:
+   - No standard NaNs found.
+   Coded as 'Missing' strings:
+   - medical_specialty: 12382 ('49.53%')
+   - diag_1: 4 ('0.02%')
+   - diag_2: 42 ('0.17%')
+   - diag_3: 196 ('0.78%')
+
+6. Duplicate rows: 0
+
+7. Unique values for categorical columns:
+   - age: 6 unique values: ['[70-80)', '[50-60)', '[60-70)', '[40-50)', '[80-90)', '[90-100)']
+   - medical_specialty: 7 unique values: ['Missing', 'Other', 'InternalMedicine', 'Family/GeneralPractice', 'Cardiology', 'Surgery', 'Emergency/Trauma']
+   - diag_1: 8 unique values: ['Circulatory', 'Other', 'Injury', 'Digestive', 'Respiratory', 'Diabetes', 'Musculoskeletal', 'Missing']
+   - diag_2: 8 unique values: ['Respiratory', 'Other', 'Circulatory', 'Injury', 'Diabetes', 'Digestive', 'Musculoskeletal', 'Missing']
+   - diag_3: 8 unique values: ['Other', 'Circulatory', 'Diabetes', 'Respiratory', 'Injury', 'Musculoskeletal', 'Digestive', 'Missing']
+   - glucose_test: 3 unique values: ['no', 'normal', 'high']
+   - A1Ctest: 3 unique values: ['no', 'normal', 'high']
+   - change: 2 unique values: ['no', 'yes']
+   - diabetes_med: 2 unique values: ['yes', 'no']
+
+8. Target class distribution ('readmitted'):
+   - no: 13246 (52.98%)
+   - yes: 11754 (47.02%)
+
+9. Numerical features: time_in_hospital, n_lab_procedures, n_procedures, n_medications, n_outpatient, n_inpatient, n_emergency
+10. Categorical features: age, medical_specialty, diag_1, diag_2, diag_3, glucose_test, A1Ctest, change, diabetes_med
+11. Possible identifier columns: n_outpatient, n_inpatient
+
+12. Potential target/data leakage columns:
+   - No explicit post-discharge features (like discharge disposition details, length of stay after readmission, etc.) were found.
+   - Features representing counts of visits in the preceding year (n_outpatient, n_inpatient, n_emergency) are historical and safe.
+   - Features such as change, diabetes_med, glucose_test, A1Ctest, time_in_hospital represent events occurring during or before discharge, making them safe for pre-discharge prediction.
+==================================================

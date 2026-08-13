@@ -1,0 +1,18 @@
+Classification Threshold Tradeoff Analysis
+===========================================
+Threshold  | Recall   | Precision | F1     | FP     | FN    
+-------------------------------------------------------
+0.1        | 0.9991   | 0.4711    | 0.6403 | 10548  | 8     
+0.2        | 0.9915   | 0.4748    | 0.6421 | 10313  | 80    
+0.3        | 0.9296   | 0.4968    | 0.6476 | 8852   | 662   
+0.4        | 0.7416   | 0.5440    | 0.6276 | 5846   | 2430  
+0.5        | 0.4978   | 0.6140    | 0.5498 | 2943   | 4722  
+0.6        | 0.2815   | 0.6847    | 0.3990 | 1219   | 6756  
+0.7        | 0.1396   | 0.7625    | 0.2360 | 409    | 8090  
+0.8        | 0.0574   | 0.8072    | 0.1072 | 129    | 8863  
+0.9        | 0.0171   | 0.8703    | 0.0336 | 24     | 9242  
+
+Optimization Selection:
+Selected Threshold: 0.3
+Reason: Maximizes the F1-score (0.6476) to balance sensitivity (recall) and specificity (precision).
+Note: This is a hackathon prototype threshold and is not clinically validated.

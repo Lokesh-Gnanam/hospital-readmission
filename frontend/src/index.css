@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 11%;      /* Deep Slate Dark Mode */
+    --foreground: 213 31% 91%;
+    
+    --card: 223 47% 14%;            /* Sleek Card Background */
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 217 91% 60%;         /* Cobalt blue clinical accent */
+    --primary-foreground: 222 47% 11%;
+    
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 223 47% 18%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 217 91% 60%;
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 358 75% 55%;     /* Crimson warning */
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 223 47% 20%;
+    --input: 223 47% 20%;
+    --ring: 217 91% 60%;
+    
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom scrollbars for a premium experience */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}

@@ -1,0 +1,66 @@
+SHAP LOCAL PATIENT EXPLANATIONS
+===============================
+Note: SHAP explanations are hackathon model feature attributions and are NOT medical diagnoses.
+
+
+Patient Index: 2813
+30-Day Readmission Probability: 99.01%
+Risk Level: HIGH (Operating Decision Threshold: 0.30)
+
+Original Patient Features:
+  - time_in_hospital: 4
+  - n_lab_procedures: 48
+  - n_procedures: 0
+  - n_medications: 25
+  - n_outpatient: 0
+  - n_inpatient: 9
+  - n_emergency: 7
+  - age: [50-60)
+  - medical_specialty: Missing
+  - diag_1: Respiratory
+  - diag_2: Diabetes
+  - diag_3: Circulatory
+  - glucose_test: no
+  - A1Ctest: no
+  - change: no
+  - diabetes_med: yes
+
+Top Contributing Factors:
+  - n_inpatient (val: 7.156288070477784) — High impact (pushes risk UP by 2.0257 log-odds)
+  - n_emergency (val: 8.057439455140967) — High impact (pushes risk UP by 1.9632 log-odds)
+  - n_lab_procedures (val: 0.23815653140025256) — High impact (pushes risk UP by 0.1705 log-odds)
+  - diag_1_Other (val: 0.0) — High impact (pushes risk UP by 0.1387 log-odds)
+  - diag_2_Diabetes (val: 1.0) — Medium impact (pushes risk UP by 0.0855 log-odds)
+  - n_procedures (val: -0.7877512148150224) — Medium impact (pushes risk UP by 0.0684 log-odds)
+--------------------------------------------------
+
+Patient Index: 1071
+30-Day Readmission Probability: 5.85%
+Risk Level: LOW (Operating Decision Threshold: 0.30)
+
+Original Patient Features:
+  - time_in_hospital: 5
+  - n_lab_procedures: 75
+  - n_procedures: 4
+  - n_medications: 52
+  - n_outpatient: 0
+  - n_inpatient: 0
+  - n_emergency: 0
+  - age: [60-70)
+  - medical_specialty: Surgery
+  - diag_1: Circulatory
+  - diag_2: Circulatory
+  - diag_3: Circulatory
+  - glucose_test: no
+  - A1Ctest: normal
+  - change: yes
+  - diabetes_med: yes
+
+Top Contributing Factors:
+  - n_medications (val: 4.436542406637573) — High impact (pushes risk DOWN by -1.5794 log-odds)
+  - medical_specialty_Surgery (val: 1.0) — High impact (pushes risk DOWN by -0.3268 log-odds)
+  - n_inpatient (val: -0.522132606000525) — High impact (pushes risk DOWN by -0.2884 log-odds)
+  - n_outpatient (val: -0.3151024683928267) — High impact (pushes risk DOWN by -0.1176 log-odds)
+  - n_procedures (val: 1.5502230825398948) — High impact (pushes risk DOWN by -0.1108 log-odds)
+  - diabetes_med_no (val: 0.0) — Medium impact (pushes risk UP by 0.0709 log-odds)
+--------------------------------------------------
