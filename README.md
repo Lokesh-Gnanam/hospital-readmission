@@ -128,7 +128,3 @@ To run the exact mathematical parity test (which verifies that direct Python mod
 python tests/verify_parity.py
 ```
 
----
-
-## ⚠️ Disclaimer
-This system is a research/hackathon prototype. The predictions, risk categories, and explanations are prototype decision-support metrics and are **not clinically validated** nor constitute a medical diagnosis. Do not use in active clinical environments.
