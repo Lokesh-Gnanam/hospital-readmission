@@ -6,94 +6,119 @@ export interface PatientInput {
   n_outpatient: number;
   n_inpatient: number;
   n_emergency: number;
-  age: '[40-50)' | '[50-60)' | '[60-70)' | '[70-80)' | '[80-90)' | '[90-100)';
-  medical_specialty: 'Cardiology' | 'Emergency/Trauma' | 'Family/GeneralPractice' | 'InternalMedicine' | 'Missing' | 'Other' | 'Surgery';
-  diag_1: 'Circulatory' | 'Diabetes' | 'Digestive' | 'Injury' | 'Missing' | 'Musculoskeletal' | 'Other' | 'Respiratory';
-  diag_2: 'Circulatory' | 'Diabetes' | 'Digestive' | 'Injury' | 'Missing' | 'Musculoskeletal' | 'Other' | 'Respiratory';
-  diag_3: 'Circulatory' | 'Diabetes' | 'Digestive' | 'Injury' | 'Missing' | 'Musculoskeletal' | 'Other' | 'Respiratory';
-  glucose_test: 'no' | 'normal' | 'high';
-  A1Ctest: 'no' | 'normal' | 'high';
-  change: 'no' | 'yes';
-  diabetes_med: 'no' | 'yes';
+  age: string;
+  medical_specialty: string;
+  diag_1: string;
+  diag_2: string;
+  diag_3: string;
+  glucose_test: string;
+  A1Ctest: string;
+  change: string;
+  diabetes_med: string;
 }
 
-export interface PatientResponse extends PatientInput {
-  id: number;
-  patient_reference: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface FeatureExplanation {
+export interface BackendShapDriver {
   feature: string;
-  value: any;
-  impact: 'positive' | 'negative';
-  importance: number;
+  shap_value?: number;
+  direction?: string;
+  plain_language_driver?: string;
+  plain_language?: string;
+  impact_direction?: 'increase' | 'decrease';
+  magnitude?: number;
 }
 
-export interface PredictionResponse {
-  prediction: number;
+export interface PreventiveAction {
+  id?: string;
+  title: string;
+  reason: string;
+  priority: 'High' | 'Medium' | 'Routine' | string;
+  category?: string;
+}
+
+export interface PatientRecord extends PatientInput {
+  id: string; // PT-10001+
+  patient_id?: string;
+  raw_id?: number;
   readmission_probability: number;
-  risk_level: 'LOW' | 'MODERATE' | 'HIGH';
-  threshold: number;
-  top_contributing_features: FeatureExplanation[];
-  model_version: string;
-  disclaimer: string;
+  clinical_risk_tier: 'High Risk' | 'Moderate Risk' | 'Low Risk' | string;
+  primary_driver: string;
+  top_3_shap_drivers?: BackendShapDriver[];
+  preventive_actions?: PreventiveAction[];
 }
 
-export interface PredictionHistory {
-  id: number;
-  patient_id: number;
-  patient_reference?: string; // from joined aggregates
-  readmission_probability: number;
-  prediction: number;
-  risk_level: 'LOW' | 'MODERATE' | 'HIGH';
-  threshold: number;
-  model_version: string;
-  created_at: string;
-  explanations?: FeatureExplanation[];
+export interface PatientsResponse {
+  patients: PatientRecord[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
-export interface HealthResponse {
+export interface HealthStatus {
   status: string;
   model_loaded: boolean;
-  database_connected: boolean;
+  model_name: string;
+  version?: string;
+  operating_threshold: number;
+  database_connected?: boolean;
 }
 
-export interface ModelInfo {
-  model_type: string;
-  threshold: number;
-  best_hyperparameters: Record<string, any>;
-  cross_validation_metrics: {
-    mean_accuracy: number;
-    mean_precision: number;
-    mean_recall: number;
-    mean_f1: number;
-    mean_roc_auc: number;
-    mean_pr_auc: number;
-    [key: string]: number;
-  };
-  feature_info: {
-    numerical_features: string[];
-    categorical_features: string[];
-    [key: string]: string[];
-  };
-  model_version: string;
+export interface PredictionResult {
+  readmission_probability: number;
+  predicted_readmitted?: string;
+  clinical_risk_tier: 'High Risk' | 'Moderate Risk' | 'Low Risk' | string;
+  top_3_shap_drivers: BackendShapDriver[];
+  preventive_actions: PreventiveAction[];
+  operating_threshold?: number;
 }
 
-export interface DashboardSummary {
-  total_predictions: number;
-  high_risk_patients: number;
-  moderate_risk_patients: number;
-  low_risk_patients: number;
-  average_probability: number;
-  recent_predictions: Array<{
-    id: number;
-    patient_id: number;
-    patient_reference: string;
-    readmission_probability: number;
-    prediction: number;
-    risk_level: 'LOW' | 'MODERATE' | 'HIGH';
-    created_at: string;
-  }>;
+export interface ConfusionMatrix {
+  tn: number;
+  fp: number;
+  fn: number;
+  tp: number;
+}
+
+export interface EvaluationMetricsOOF {
+  threshold?: number;
+  roc_auc: number;
+  pr_auc: number;
+  f1_score: number;
+  recall_positive: number;
+  precision_positive: number;
+  avg_cost_per_patient: number;
+  confusion_matrix: ConfusionMatrix;
+  total_cost?: number;
+}
+
+export interface ROCCurvePoint {
+  fpr: number;
+  tpr: number;
+  threshold?: number;
+}
+
+export interface CandidateModelResult {
+  model_name: string;
+  architecture: string;
+  roc_auc: number;
+  pr_auc: number;
+  f1_score: number;
+  recall_positive: number;
+  precision_positive: number;
+  cost_cutoff: number;
+  avg_cost_per_patient: number;
+  is_selected: boolean;
+}
+
+export interface ModelMetricsResponse {
+  model_name?: string;
+  version?: string;
+  timestamp?: string;
+  dataset_rows: number;
+  optimal_threshold: number;
+  cost_parameters?: { cost_fn: number; cost_fp: number };
+  evaluation_metrics_oof: EvaluationMetricsOOF;
+  roc_curve_points: ROCCurvePoint[];
+  all_model_results_oof: Record<string, EvaluationMetricsOOF> | CandidateModelResult[];
+  num_transformed_features?: number;
 }
