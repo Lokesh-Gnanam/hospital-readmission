@@ -21,8 +21,13 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => {
-          // Convert ?page=X&page_size=Y to ?skip=(X-1)*Y&limit=Y
           const url = new URL(path, 'http://localhost:8000');
+          const skipParam = url.searchParams.get('skip');
+          const limitParam = url.searchParams.get('limit');
+          if (skipParam !== null && limitParam !== null) {
+            return `/api/v1/patients?skip=${skipParam}&limit=${limitParam}`;
+          }
+          // Convert ?page=X&page_size=Y to ?skip=(X-1)*Y&limit=Y
           const page = parseInt(url.searchParams.get('page') || '1');
           const pageSize = parseInt(url.searchParams.get('page_size') || '15');
           const skip = (page - 1) * pageSize;

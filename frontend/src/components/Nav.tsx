@@ -8,7 +8,7 @@ interface NavProps {
   health: HealthStatus | null;
 }
 
-export const Nav: React.FC<NavProps> = ({ activeTab, setActiveTab }) => {
+export const Nav: React.FC<NavProps> = ({ activeTab, setActiveTab, health }) => {
 
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
@@ -75,8 +75,27 @@ export const Nav: React.FC<NavProps> = ({ activeTab, setActiveTab }) => {
             </div>
           </div>
 
-          {/* Right empty container to balance layout */}
-          <div className="flex items-center space-x-2"></div>
+          {/* Right: API Health Status Indicator */}
+          <div className="flex items-center space-x-2 shrink-0">
+            {health ? (
+              <div 
+                className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-mono select-none"
+                title={`Database Connected: ${health.database_connected ? 'Yes' : 'No'}\nModel Loaded: ${health.model_loaded ? 'Yes' : 'No'}`}
+              >
+                <span className={`w-2 h-2 rounded-full ${health.status === 'healthy' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
+                <span className="text-slate-600 font-semibold uppercase tracking-wider text-[10px] hidden sm:inline">
+                  API: {health.status}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-mono select-none">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span className="text-slate-600 font-semibold uppercase tracking-wider text-[10px] hidden sm:inline">
+                  API: CONNECTING
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
