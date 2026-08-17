@@ -3,11 +3,12 @@ import Nav from './components/Nav';
 import WardOverview from './pages/WardOverview';
 import NewAssessment from './pages/NewAssessment';
 import ModelPerformance from './pages/ModelPerformance';
+import SystemAdmin from './pages/SystemAdmin';
 import type { HealthStatus } from './types';
 import { fetchHealth } from './api/client';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'ward' | 'intake' | 'performance'>('ward');
+  const [activeTab, setActiveTab] = useState<'ward' | 'intake' | 'performance' | 'admin'>('ward');
   const [health, setHealth] = useState<HealthStatus | null>(null);
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
         {activeTab === 'ward' && <WardOverview />}
         {activeTab === 'intake' && <NewAssessment />}
         {activeTab === 'performance' && <ModelPerformance />}
+        {activeTab === 'admin' && <SystemAdmin />}
       </main>
 
       {/* Platform Footer */}

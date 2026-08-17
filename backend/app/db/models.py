@@ -65,3 +65,12 @@ class PredictionExplanation(Base):
     importance = Column(Float, nullable=False)           # SHAP value
     
     prediction = relationship("Prediction", back_populates="explanations")
+
+    @property
+    def feature(self):
+        return self.feature_name
+
+    @property
+    def value(self):
+        return self.feature_value
+

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Activity, LayoutGrid, UserPlus, BarChart3 } from 'lucide-react';
+import { Activity, LayoutGrid, UserPlus, BarChart3, Settings } from 'lucide-react';
 import type { HealthStatus } from '../types';
 
 interface NavProps {
-  activeTab: 'ward' | 'intake' | 'performance';
-  setActiveTab: (tab: 'ward' | 'intake' | 'performance') => void;
+  activeTab: 'ward' | 'intake' | 'performance' | 'admin';
+  setActiveTab: (tab: 'ward' | 'intake' | 'performance' | 'admin') => void;
   health: HealthStatus | null;
 }
 
@@ -71,6 +71,18 @@ export const Nav: React.FC<NavProps> = ({ activeTab, setActiveTab, health }) => 
               >
                 <BarChart3 className="w-4 h-4 text-slate-500" />
                 <span>Model Performance</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`flex items-center space-x-2 px-4 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                  activeTab === 'admin'
+                    ? 'bg-white text-[#12213A] shadow-xs border border-slate-200/80 font-bold'
+                    : 'text-slate-600 hover:text-slate-900 font-medium'
+                }`}
+              >
+                <Settings className="w-4 h-4 text-slate-500" />
+                <span>System Admin</span>
               </button>
             </div>
           </div>

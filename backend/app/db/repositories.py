@@ -34,6 +34,18 @@ class PatientRepository:
         """
         return db.query(Patient).offset(skip).limit(limit).all()
 
+    @staticmethod
+    def delete(db: Session, patient_id: int) -> bool:
+        """
+        Deletes a patient record by database ID.
+        """
+        db_patient = db.query(Patient).filter(Patient.id == patient_id).first()
+        if db_patient:
+            db.delete(db_patient)
+            db.commit()
+            return True
+        return False
+
 
 class PredictionRepository:
     @staticmethod
@@ -67,6 +79,18 @@ class PredictionRepository:
         Retrieves prediction history for a specific patient.
         """
         return db.query(Prediction).filter(Prediction.patient_id == patient_id).order_by(Prediction.created_at.desc()).all()
+
+    @staticmethod
+    def delete(db: Session, prediction_id: int) -> bool:
+        """
+        Deletes a prediction record by database ID.
+        """
+        db_prediction = db.query(Prediction).filter(Prediction.id == prediction_id).first()
+        if db_prediction:
+            db.delete(db_prediction)
+            db.commit()
+            return True
+        return False
 
 
 class ExplanationRepository:

@@ -5,7 +5,13 @@ import {
   getModelMetrics as fetchModelMetrics,
   getPatients as fetchPatients,
   predictPatient as predictSingle,
-  predictBatch
+  predictBatch,
+  deletePatient,
+  fetchPredictions,
+  deletePrediction,
+  fetchDatasetInfo,
+  uploadDataset,
+  deleteDataset
 } from '../services/api';
 
 export {
@@ -13,5 +19,11 @@ export {
   fetchModelMetrics,
   fetchPatients,
   predictSingle,
-  predictBatch
+  predictBatch,
+  deletePatient,
+  fetchPredictions,
+  deletePrediction,
+  fetchDatasetInfo,
+  uploadDataset,
+  deleteDataset
 };

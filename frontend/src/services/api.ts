@@ -6,12 +6,14 @@ import type {
   PatientInput,
   PatientRecord,
   PredictionResult,
-  BackendShapDriver
+  BackendShapDriver,
+  DatasetInfoResponse,
+  DatasetPreviewResponse
 } from '../types';
 
-// Use relative URL so Vite proxy forwards requests without CORS issues
+// Use environment VITE_API_URL or fallback to relative URL
 const apiClient = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || '',
   headers: {
     'Content-Type': 'application/json'
   },
@@ -56,6 +58,23 @@ async function postWithFallback<T>(url: string, data: any, config?: any): Promis
     } catch (err2: any) {
       const directUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await directClient.post<T>(directUrl, data, config);
+      return res.data;
+    }
+  }
+}
+
+async function deleteWithFallback<T>(url: string, config?: any): Promise<T> {
+  try {
+    const res = await apiClient.delete<T>(url, config);
+    return res.data;
+  } catch (err: any) {
+    try {
+      const fallbackUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
+      const res = await apiClient.delete<T>(fallbackUrl, config);
+      return res.data;
+    } catch (err2: any) {
+      const directUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
+      const res = await directClient.delete<T>(directUrl, config);
       return res.data;
     }
   }
@@ -245,23 +264,63 @@ export async function getPatients(page: number = 1, pageSize: number = 15): Prom
     };
   }
 
-  // Score loaded patients with live prediction model
-  const scoredList = await predictBatch(rawPatients);
-  const mapped = scoredList.map((scored, idx) => {
-    const orig = rawPatients[idx] || {};
-    const ptRef = orig.patient_reference || (orig.id ? `PT-${orig.id}` : `PT-${10001 + (page - 1) * pageSize + idx}`);
+  // Fetch all predictions to match with loaded patients
+  let allPredictions: any[] = [];
+  try {
+    allPredictions = await fetchPredictions();
+  } catch (err) {
+    console.warn('Failed to fetch predictions for matching:', err);
+  }
 
-    return {
-      ...orig,
-      id: ptRef,
-      patient_id: ptRef,
-      readmission_probability: scored.readmission_probability,
-      clinical_risk_tier: scored.clinical_risk_tier,
-      primary_driver: scored.primary_driver,
-      preventive_actions: scored.preventive_actions,
-      top_3_shap_drivers: scored.top_3_shap_drivers
-    };
-  });
+  // Map patients and match with predictions, falling back to scoring only if missing
+  const mapped = await Promise.all(rawPatients.map(async (orig, idx) => {
+    const ptRef = orig.patient_reference || (orig.id ? `PT-${orig.id}` : `PT-${10001 + (page - 1) * pageSize + idx}`);
+    
+    // Find matching prediction by patient db ID
+    const matchingPred = allPredictions.find(p => p.patient_id === orig.id);
+    
+    if (matchingPred) {
+      const riskTier = matchingPred.risk_level === 'HIGH' ? 'High Risk' : matchingPred.risk_level === 'MODERATE' ? 'Moderate Risk' : 'Low Risk';
+      const normalizedShap = (matchingPred.explanations || []).map(normalizeShapDriver);
+      
+      return {
+        ...orig,
+        id: ptRef,
+        patient_id: ptRef,
+        readmission_probability: matchingPred.readmission_probability,
+        clinical_risk_tier: riskTier,
+        primary_driver: normalizedShap[0]?.plain_language || `Primary diagnosis: ${orig.diag_1}`,
+        preventive_actions: getPreventiveActions(riskTier),
+        top_3_shap_drivers: normalizedShap
+      };
+    } else {
+      // Score only if missing prediction in DB
+      try {
+        const scored = await predictPatient(orig);
+        return {
+          ...orig,
+          id: ptRef,
+          patient_id: ptRef,
+          readmission_probability: scored.readmission_probability,
+          clinical_risk_tier: scored.clinical_risk_tier,
+          primary_driver: scored.top_3_shap_drivers[0]?.plain_language || `Primary diagnosis: ${orig.diag_1}`,
+          preventive_actions: scored.preventive_actions,
+          top_3_shap_drivers: scored.top_3_shap_drivers
+        };
+      } catch (err) {
+        return {
+          ...orig,
+          id: ptRef,
+          patient_id: ptRef,
+          readmission_probability: 0.50,
+          clinical_risk_tier: 'Moderate Risk',
+          primary_driver: `Primary diagnosis: ${orig.diag_1}`,
+          preventive_actions: getPreventiveActions('Moderate Risk'),
+          top_3_shap_drivers: []
+        };
+      }
+    }
+  }));
 
   return {
     patients: mapped,
@@ -395,4 +454,34 @@ export async function uploadBatchCsv(file: File): Promise<{ predictions: Patient
     reader.onerror = reject;
     reader.readAsText(file);
   });
+}
+
+export async function deletePatient(id: number): Promise<any> {
+  return deleteWithFallback(`/patients/${id}`);
+}
+
+export async function fetchPredictions(): Promise<any[]> {
+  return getWithFallback<any[]>('/predictions');
+}
+
+export async function deletePrediction(id: number): Promise<any> {
+  return deleteWithFallback(`/predictions/${id}`);
+}
+
+export async function fetchDatasetInfo(): Promise<DatasetInfoResponse> {
+  return getWithFallback<DatasetInfoResponse>('/dataset/info');
+}
+
+export async function uploadDataset(file: File): Promise<DatasetPreviewResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return postWithFallback<DatasetPreviewResponse>('/dataset/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+}
+
+export async function deleteDataset(confirm: boolean = false): Promise<any> {
+  return deleteWithFallback(`/dataset?confirm=${confirm}`);
 }

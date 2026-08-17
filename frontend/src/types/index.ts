@@ -38,6 +38,7 @@ export interface PreventiveAction {
 export interface PatientRecord extends PatientInput {
   id: string; // PT-10001+
   patient_id?: string;
+  patient_reference?: string;
   raw_id?: number;
   readmission_probability: number;
   clinical_risk_tier: 'High Risk' | 'Moderate Risk' | 'Low Risk' | string;
@@ -121,4 +122,22 @@ export interface ModelMetricsResponse {
   roc_curve_points: ROCCurvePoint[];
   all_model_results_oof: Record<string, EvaluationMetricsOOF> | CandidateModelResult[];
   num_transformed_features?: number;
+}
+
+export interface DatasetInfoResponse {
+  filename: string;
+  rows: number;
+  columns: number;
+  target: string;
+  last_updated: string;
+  size_bytes: number;
+}
+
+export interface DatasetPreviewResponse {
+  filename: string;
+  rows: number;
+  columns: number;
+  column_names: string[];
+  target: string;
+  preview_rows: Record<string, any>[];
 }

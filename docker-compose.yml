@@ -1,16 +1,16 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: readmissions-db
+  postgres:
+    image: postgres:16-alpine
+    container_name: readmissions-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: hospital_readmissions
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,10 +30,10 @@ services:
     environment:
       - ENVIRONMENT=production
       - PORT=8000
-      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/hospital_readmissions
-      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres:5432/hospital_readmissions
+      - CORS_ORIGINS=http://localhost,http://127.0.0.1,http://localhost:5173,http://localhost:3000
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
     volumes:
       - ./models:/workspace/models
@@ -50,5 +50,18 @@ services:
     depends_on:
       - backend
 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: readmissions-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@vitals.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
+

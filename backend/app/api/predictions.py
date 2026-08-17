@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.patient import PatientInput
-from app.schemas.prediction import PredictionResponse
+from app.schemas.prediction import PredictionResponse, PredictionHistoryResponse
 from app.services.patient_service import PatientService
 from app.services.prediction_service import PredictionService
 from app.services.explanation_service import ExplanationService
@@ -91,3 +91,39 @@ def create_prediction(patient_input: PatientInput, db: Session = Depends(get_db)
         model_version=pred_res["model_version"],
         disclaimer=pred_res["disclaimer"]
     )
+
+
+@router.get("/predictions", response_model=list[PredictionHistoryResponse])
+def get_predictions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """
+    Retrieves prediction history with offset pagination.
+    """
+    return PredictionRepository.list_all(db, skip, limit)
+
+
+@router.get("/predictions/{id}", response_model=PredictionHistoryResponse)
+def get_prediction_by_id(id: int, db: Session = Depends(get_db)):
+    """
+    Retrieves a specific prediction run details.
+    """
+    db_pred = PredictionRepository.get_by_id(db, id)
+    if not db_pred:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Prediction record not found for database ID: {id}"
+        )
+    return db_pred
+
+
+@router.delete("/predictions/{id}")
+def delete_prediction_record(id: int, db: Session = Depends(get_db)):
+    """
+    Deletes a prediction run and its explanations from PostgreSQL.
+    """
+    success = PredictionRepository.delete(db, id)
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Prediction record not found for database ID: {id}"
+        )
+    return {"status": "success", "message": f"Successfully deleted prediction ID: {id}"}

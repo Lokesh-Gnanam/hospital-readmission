@@ -34,3 +34,17 @@ def create_patient_record(patient_input: PatientInput, db: Session = Depends(get
     Registers a new de-identified patient in the system without performing predictions.
     """
     return PatientService.create_patient(db, patient_input)
+
+
+@router.delete("/patients/{id}")
+def delete_patient_record(id: int, db: Session = Depends(get_db)):
+    """
+    Removes a patient record and its predictions from PostgreSQL.
+    """
+    success = PatientService.delete_patient(db, id)
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Patient record not found for database ID: {id}"
+        )
+    return {"status": "success", "message": f"Successfully deleted patient ID: {id}"}

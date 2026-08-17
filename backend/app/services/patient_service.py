@@ -43,3 +43,11 @@ class PatientService:
         Retrieves paginated list of patients.
         """
         return PatientRepository.list_all(db, skip, limit)
+
+    @staticmethod
+    def delete_patient(db: Session, patient_id: int) -> bool:
+        """
+        Deletes a patient from database.
+        """
+        logger.info(f"Deleting patient with ID: {patient_id}")
+        return PatientRepository.delete(db, patient_id)

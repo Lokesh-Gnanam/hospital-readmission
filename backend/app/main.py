@@ -10,7 +10,7 @@ from app.ml.model_loader import ModelLoader
 from app.db.database import Base, engine
 
 # Import routers
-from app.api import health, predictions, patients, dashboard, model
+from app.api import health, predictions, patients, dashboard, model, dataset
 
 # 1. Initialize logging
 setup_logging()
@@ -76,6 +76,7 @@ app.include_router(predictions.router, prefix="/api/v1", tags=["Prediction"])
 app.include_router(patients.router, prefix="/api/v1", tags=["Patients"])
 app.include_router(dashboard.router, prefix="/api/v1", tags=["Dashboard"])
 app.include_router(model.router, prefix="/api/v1", tags=["Model"])
+app.include_router(dataset.router, prefix="/api/v1", tags=["Dataset"])
 
 @app.get("/")
 def read_root():
