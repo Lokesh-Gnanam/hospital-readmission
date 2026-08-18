@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
     
     # CORS Origins (comma-separated string)
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://127.0.0.1:5173,http://127.0.0.1:3000"
     
     # Database Settings (defaults to SQLite local file)
     DATABASE_URL: str = "sqlite:///./readmissions.db"

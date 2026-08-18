@@ -18,7 +18,7 @@ import PatientDetail from '../components/PatientDetail';
 
 export const WardOverview: React.FC = () => {
   const [page, setPage] = useState<number>(1);
-  const pageSize = 15;
+  const [pageSize, setPageSize] = useState<number>(15);
   const [data, setData] = useState<PatientsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedPatient, setSelectedPatient] = useState<PatientRecord | null>(null);
@@ -35,6 +35,7 @@ export const WardOverview: React.FC = () => {
   const loadPatientsData = async (pageNum: number) => {
     setLoading(true);
     try {
+      // In server mode, fetch page. If full dataset is already loaded, stay in client mode.
       const res = await fetchPatients(pageNum, pageSize);
       setData(res);
     } catch (err) {
@@ -46,9 +47,14 @@ export const WardOverview: React.FC = () => {
 
   useEffect(() => {
     loadPatientsData(page);
-  }, [page]);
+  }, []);
 
-  // Dynamic counts derived from loaded patients list
+  // Reset current page to 1 whenever risk filter, search, or page size changes
+  useEffect(() => {
+    setPage(1);
+  }, [filterTier, searchQuery, pageSize]);
+
+  // Overall metric counts derived from loaded patients population
   const metrics = useMemo(() => {
     if (!data || !data.patients) {
       return { total: 0, high: 0, moderate: 0, low: 0 };
@@ -62,14 +68,38 @@ export const WardOverview: React.FC = () => {
       const tier = p.clinical_risk_tier;
       if (tier === 'High Risk') high++;
       else if (tier === 'Moderate Risk') moderate++;
-      else low++;
+      else if (tier === 'Low Risk') low++;
     });
 
     return {
-      total: pts.length,
+      total: data.total && data.total > pts.length ? data.total : pts.length,
       high,
       moderate,
       low
+    };
+  }, [data]);
+
+  // Filter counts for pills
+  const pillCounts = useMemo(() => {
+    if (!data || !data.patients) {
+      return { ALL: 0, 'High Risk': 0, 'Moderate Risk': 0, 'Low Risk': 0 };
+    }
+    const pts = data.patients;
+    let high = 0;
+    let moderate = 0;
+    let low = 0;
+
+    pts.forEach(p => {
+      if (p.clinical_risk_tier === 'High Risk') high++;
+      else if (p.clinical_risk_tier === 'Moderate Risk') moderate++;
+      else if (p.clinical_risk_tier === 'Low Risk') low++;
+    });
+
+    return {
+      ALL: pts.length,
+      'High Risk': high,
+      'Moderate Risk': moderate,
+      'Low Risk': low
     };
   }, [data]);
 
@@ -78,12 +108,12 @@ export const WardOverview: React.FC = () => {
     if (!data || !data.patients) return [];
     let list = [...data.patients];
 
-    // Filter by tier
+    // Filter by risk tier
     if (filterTier !== 'ALL') {
       list = list.filter(p => p.clinical_risk_tier === filterTier);
     }
 
-    // Filter by search query (patient ID, specialty, driver)
+    // Filter by search query (patient ID, specialty, primary driver, diag)
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -108,6 +138,16 @@ export const WardOverview: React.FC = () => {
     return list;
   }, [data, filterTier, searchQuery, sortBy]);
 
+  // Pagination calculations
+  const totalFilteredCount = processedPatients.length > 0 ? processedPatients.length : (data?.total || 0);
+  const totalPages = Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+
+  // Current page items to display on screen
+  const displayedPatients = useMemo(() => {
+    const startIdx = (page - 1) * pageSize;
+    return processedPatients.slice(startIdx, startIdx + pageSize);
+  }, [processedPatients, page, pageSize]);
+
   // Handle CSV file upload trigger sending file to POST /predict_batch
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -115,12 +155,16 @@ export const WardOverview: React.FC = () => {
     setUploadStatus('Scoring uploaded ward patients CSV with POST /predict_batch...');
     try {
       const result = await uploadBatchCsv(file);
-      if (result && result.predictions && result.predictions.length > 0 && data) {
+      if (result && result.predictions && result.predictions.length > 0) {
         setData({
-          ...data,
-          patients: [...result.predictions, ...data.patients]
+          patients: result.predictions,
+          total: result.predictions.length,
+          page: 1,
+          page_size: pageSize,
+          total_pages: Math.ceil(result.predictions.length / pageSize)
         });
-        setUploadStatus('Batch scoring complete! Returned predictions loaded.');
+        setPage(1);
+        setUploadStatus(`Batch scoring complete! ${result.predictions.length.toLocaleString()} predictions loaded across ${Math.ceil(result.predictions.length / pageSize).toLocaleString()} pages.`);
       } else {
         setUploadStatus('No valid patient rows found in CSV file.');
       }
@@ -128,14 +172,15 @@ export const WardOverview: React.FC = () => {
       setTimeout(() => {
         setShowUploadModal(false);
         setUploadStatus('');
-      }, 1500);
+      }, 2000);
     } catch (err) {
       console.error('Error during CSV batch prediction:', err);
       setUploadStatus('Error processing CSV batch upload. Try again.');
     }
   };
 
-  const totalPages = data?.total_pages || 1667;
+  const startRecordNum = totalFilteredCount > 0 ? (page - 1) * pageSize + 1 : 0;
+  const endRecordNum = Math.min(page * pageSize, totalFilteredCount);
 
   return (
     <div className="space-y-6">
@@ -171,30 +216,30 @@ export const WardOverview: React.FC = () => {
         </div>
       </div>
 
-      {/* 4 Stat Dashboard Cards Grid Matching Screenshot 5 */}
+      {/* 4 Stat Dashboard Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Page Scored */}
+        {/* Patients Scored */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider">Page Scored</span>
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">PATIENTS SCORED</span>
             <Users className="w-4 h-4 text-slate-400" />
           </div>
           <div className="font-mono font-extrabold text-3xl text-[#12213A]">
-            {metrics.total}
+            {metrics.total.toLocaleString()}
           </div>
-          <div className="text-[11px] text-slate-400 font-mono">
-            Page {page} of {totalPages.toLocaleString()}
+          <div className="text-[11px] text-slate-400 font-sans font-medium">
+            Total scored records
           </div>
         </div>
 
         {/* High Risk */}
         <div className="bg-red-50/40 rounded-2xl p-5 border border-red-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-red-800">
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider">High Risk</span>
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">HIGH RISK</span>
             <ShieldAlert className="w-4 h-4 text-red-600" />
           </div>
           <div className="font-mono font-extrabold text-3xl text-red-700">
-            {metrics.high}
+            {metrics.high.toLocaleString()}
           </div>
           <div className="text-[11px] text-red-700 font-sans font-medium">
             Require intervention
@@ -204,11 +249,11 @@ export const WardOverview: React.FC = () => {
         {/* Moderate Risk */}
         <div className="bg-amber-50/40 rounded-2xl p-5 border border-amber-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-amber-800">
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider">Moderate Risk</span>
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">MODERATE RISK</span>
             <AlertTriangle className="w-4 h-4 text-amber-600" />
           </div>
           <div className="font-mono font-extrabold text-3xl text-amber-700">
-            {metrics.moderate}
+            {metrics.moderate.toLocaleString()}
           </div>
           <div className="text-[11px] text-amber-700 font-sans font-medium">
             Close monitoring
@@ -218,11 +263,11 @@ export const WardOverview: React.FC = () => {
         {/* Low Risk */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-mono font-semibold uppercase tracking-wider">Low Risk</span>
+            <span className="text-xs font-mono font-semibold uppercase tracking-wider">LOW RISK</span>
             <CheckCircle2 className="w-4 h-4 text-slate-400" />
           </div>
           <div className="font-mono font-extrabold text-3xl text-slate-700">
-            {metrics.low}
+            {metrics.low.toLocaleString()}
           </div>
           <div className="text-[11px] text-slate-400 font-sans font-medium">
             Standard discharge
@@ -230,23 +275,34 @@ export const WardOverview: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter, Search & Pagination Control Bar Matching Screenshot 5 */}
+      {/* Filter, Search & Pagination Control Bar */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Filter Pills */}
+        {/* Risk Filter Pills with Live Badges */}
         <div className="flex items-center space-x-1.5 flex-wrap">
-          {(['ALL', 'High Risk', 'Moderate Risk', 'Low Risk'] as const).map(tier => (
-            <button
-              key={tier}
-              onClick={() => setFilterTier(tier)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold font-sans transition-colors cursor-pointer ${
-                filterTier === tier
-                  ? 'bg-[#12213A] text-white shadow-xs'
-                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
-              }`}
-            >
-              {tier === 'ALL' ? 'All Patients' : tier}
-            </button>
-          ))}
+          {(['ALL', 'High Risk', 'Moderate Risk', 'Low Risk'] as const).map(tier => {
+            const label = tier === 'ALL' ? 'All Patients' : tier;
+            const count = pillCounts[tier];
+            return (
+              <button
+                key={tier}
+                onClick={() => setFilterTier(tier)}
+                className={`px-3 py-2 rounded-xl text-xs font-semibold font-sans transition-colors cursor-pointer flex items-center space-x-1.5 ${
+                  filterTier === tier
+                    ? 'bg-[#12213A] text-white shadow-xs'
+                    : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/60'
+                }`}
+              >
+                <span>{label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                    filterTier === tier ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
+                  }`}
+                >
+                  {count.toLocaleString()}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex items-center space-x-3 flex-1 max-w-xl">
@@ -274,29 +330,74 @@ export const WardOverview: React.FC = () => {
           </select>
         </div>
 
-        {/* Pagination Controls Matching Screenshot 5 */}
+        {/* Pagination Controls */}
         <div className="flex items-center space-x-2 shrink-0 border-t lg:border-t-0 pt-2 lg:pt-0 border-slate-100">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            title="Previous Page"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
+          <div className="text-xs font-sans text-slate-500 mr-2 hidden sm:block">
+            Showing <span className="font-mono font-semibold text-slate-800">{startRecordNum}</span>–
+            <span className="font-mono font-semibold text-slate-800">{endRecordNum}</span> of{' '}
+            <span className="font-mono font-semibold text-slate-800">{totalFilteredCount.toLocaleString()}</span>
+          </div>
 
-          <span className="text-xs font-mono font-bold text-[#12213A] px-2">
-            Page {page} of {totalPages.toLocaleString()}
-          </span>
-
-          <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            title="Next Page"
+          {/* Page Size Select */}
+          <select
+            value={pageSize}
+            onChange={e => setPageSize(Number(e.target.value))}
+            className="px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-mono font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer mr-1"
+            title="Patients per page"
           >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+            <option value={15}>15 / page</option>
+            <option value={25}>25 / page</option>
+            <option value={50}>50 / page</option>
+            <option value={100}>100 / page</option>
+          </select>
+
+          {totalPages > 1 && (
+            <>
+              {/* First Page Button */}
+              <button
+                onClick={() => setPage(1)}
+                disabled={page === 1}
+                className="px-2 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer text-xs font-mono font-bold"
+                title="First Page"
+              >
+                «
+              </button>
+
+              {/* Previous Page Button */}
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <span className="text-xs font-mono font-bold text-[#12213A] px-2">
+                Page {page.toLocaleString()} of {totalPages.toLocaleString()}
+              </span>
+
+              {/* Next Page Button */}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                title="Next Page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Last Page Button */}
+              <button
+                onClick={() => setPage(totalPages)}
+                disabled={page === totalPages}
+                className="px-2 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer text-xs font-mono font-bold"
+                title="Last Page"
+              >
+                »
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -306,7 +407,7 @@ export const WardOverview: React.FC = () => {
           <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-xs font-mono text-slate-500">Loading Patient Records from FastAPI backend (Page {page})...</p>
         </div>
-      ) : processedPatients.length === 0 ? (
+      ) : displayedPatients.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 border border-slate-200/80 text-center space-y-2">
           <Users className="w-8 h-8 text-slate-400 mx-auto" />
           <p className="text-sm font-semibold text-slate-700">No matching patient records found</p>
@@ -314,7 +415,7 @@ export const WardOverview: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-3">
-          {processedPatients.map(patient => (
+          {displayedPatients.map(patient => (
             <PatientRow key={patient.id} patient={patient} onSelect={setSelectedPatient} />
           ))}
         </div>

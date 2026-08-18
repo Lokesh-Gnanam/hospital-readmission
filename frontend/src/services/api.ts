@@ -8,7 +8,10 @@ import type {
   PredictionResult,
   BackendShapDriver,
   DatasetInfoResponse,
-  DatasetPreviewResponse
+  DatasetPreviewResponse,
+  AuthResponseData,
+  RegisterPayload,
+  LoginPayload
 } from '../types';
 
 // Use environment VITE_API_URL or fallback to relative URL
@@ -22,7 +25,7 @@ const apiClient = axios.create({
 
 // Direct backend client fallback if proxy is bypassed
 const directClient = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: 'http://127.0.0.1:8000',
   headers: {
     'Content-Type': 'application/json'
   },
@@ -34,11 +37,13 @@ async function getWithFallback<T>(url: string): Promise<T> {
     const res = await apiClient.get<T>(url);
     return res.data;
   } catch (err: any) {
+    if (err.response) throw err;
     try {
       const fallbackUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await apiClient.get<T>(fallbackUrl);
       return res.data;
     } catch (err2: any) {
+      if (err2.response) throw err2;
       const directUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await directClient.get<T>(directUrl);
       return res.data;
@@ -51,11 +56,13 @@ async function postWithFallback<T>(url: string, data: any, config?: any): Promis
     const res = await apiClient.post<T>(url, data, config);
     return res.data;
   } catch (err: any) {
+    if (err.response) throw err;
     try {
       const fallbackUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await apiClient.post<T>(fallbackUrl, data, config);
       return res.data;
     } catch (err2: any) {
+      if (err2.response) throw err2;
       const directUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await directClient.post<T>(directUrl, data, config);
       return res.data;
@@ -68,11 +75,13 @@ async function deleteWithFallback<T>(url: string, config?: any): Promise<T> {
     const res = await apiClient.delete<T>(url, config);
     return res.data;
   } catch (err: any) {
+    if (err.response) throw err;
     try {
       const fallbackUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await apiClient.delete<T>(fallbackUrl, config);
       return res.data;
     } catch (err2: any) {
+      if (err2.response) throw err2;
       const directUrl = url.startsWith('/api/v1') ? url : `/api/v1${url}`;
       const res = await directClient.delete<T>(directUrl, config);
       return res.data;
@@ -485,3 +494,12 @@ export async function uploadDataset(file: File): Promise<DatasetPreviewResponse>
 export async function deleteDataset(confirm: boolean = false): Promise<any> {
   return deleteWithFallback(`/dataset?confirm=${confirm}`);
 }
+
+export async function registerUser(payload: RegisterPayload): Promise<AuthResponseData> {
+  return postWithFallback<AuthResponseData>('/api/v1/auth/register', payload);
+}
+
+export async function loginUser(payload: LoginPayload): Promise<AuthResponseData> {
+  return postWithFallback<AuthResponseData>('/api/v1/auth/login', payload);
+}
+

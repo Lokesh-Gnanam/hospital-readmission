@@ -4,25 +4,41 @@ import WardOverview from './pages/WardOverview';
 import NewAssessment from './pages/NewAssessment';
 import ModelPerformance from './pages/ModelPerformance';
 import SystemAdmin from './pages/SystemAdmin';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import type { HealthStatus } from './types';
 import { fetchHealth } from './api/client';
 
-export const App: React.FC = () => {
+const MainApp: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'ward' | 'intake' | 'performance' | 'admin'>('ward');
   const [health, setHealth] = useState<HealthStatus | null>(null);
+  const [authView, setAuthView] = useState<'login' | 'register'>('login');
 
   useEffect(() => {
-    async function loadHealth() {
-      try {
-        const res = await fetchHealth();
-        setHealth(res);
-      } catch (err) {
-        console.error('Error loading health status:', err);
+    if (isAuthenticated) {
+      async function loadHealth() {
+        try {
+          const res = await fetchHealth();
+          setHealth(res);
+        } catch (err) {
+          console.error('Error loading health status:', err);
+        }
       }
+      loadHealth();
     }
-    loadHealth();
-  }, []);
+  }, [isAuthenticated]);
 
+  // Render Login or Register if unauthenticated
+  if (!isAuthenticated) {
+    if (authView === 'register') {
+      return <RegisterPage onSwitchToLogin={() => setAuthView('login')} />;
+    }
+    return <LoginPage onSwitchToRegister={() => setAuthView('register')} />;
+  }
+
+  // Render Dashboard if authenticated
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
       {/* Top Bar Header Navigation */}
@@ -51,6 +67,14 @@ export const App: React.FC = () => {
         </div>
       </footer>
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 };
 

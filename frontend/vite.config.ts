@@ -7,47 +7,51 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/auth': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
+      },
       '/health': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
       },
       '/predictions': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
       },
       '/dashboard': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
       },
       '/dataset': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
       },
       '/model': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
       },
       '/model/metrics': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: () => '/api/v1/dashboard/model-performance'
       },
       '/patients': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => {
-          const url = new URL(path, 'http://localhost:8000');
+          const url = new URL(path, 'http://127.0.0.1:8000');
           const skipParam = url.searchParams.get('skip');
           const limitParam = url.searchParams.get('limit');
           if (skipParam !== null && limitParam !== null) {
             return `/api/v1/patients?skip=${skipParam}&limit=${limitParam}`;
           }
-          // Convert ?page=X&page_size=Y to ?skip=(X-1)*Y&limit=Y
           const page = parseInt(url.searchParams.get('page') || '1');
           const pageSize = parseInt(url.searchParams.get('page_size') || '15');
           const skip = (page - 1) * pageSize;
@@ -55,22 +59,22 @@ export default defineConfig({
         }
       },
       '/sample-patients': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: () => '/api/v1/patients?skip=0&limit=5'
       },
       '/predict': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: () => '/api/v1/predict'
       },
       '/predict_batch': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: () => '/api/v1/predict'
       },
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true
       }
     }

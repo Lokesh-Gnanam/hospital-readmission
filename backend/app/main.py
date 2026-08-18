@@ -10,7 +10,7 @@ from app.ml.model_loader import ModelLoader
 from app.db.database import Base, engine
 
 # Import routers
-from app.api import health, predictions, patients, dashboard, model, dataset
+from app.api import health, predictions, patients, dashboard, model, dataset, auth
 
 # 1. Initialize logging
 setup_logging()
@@ -72,11 +72,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # 6. Include Route Routers
 app.include_router(health.router, prefix="/api/v1", tags=["Health"])
+app.include_router(health.router, prefix="", tags=["Health Root"])
 app.include_router(predictions.router, prefix="/api/v1", tags=["Prediction"])
 app.include_router(patients.router, prefix="/api/v1", tags=["Patients"])
 app.include_router(dashboard.router, prefix="/api/v1", tags=["Dashboard"])
 app.include_router(model.router, prefix="/api/v1", tags=["Model"])
 app.include_router(dataset.router, prefix="/api/v1", tags=["Dataset"])
+app.include_router(auth.router, prefix="/api/v1", tags=["Auth"])
+app.include_router(auth.router, prefix="", tags=["Auth Root"])
 
 @app.get("/")
 def read_root():

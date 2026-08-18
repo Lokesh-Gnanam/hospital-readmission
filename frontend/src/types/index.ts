@@ -141,3 +141,27 @@ export interface DatasetPreviewResponse {
   target: string;
   preview_rows: Record<string, any>[];
 }
+
+export interface User {
+  id: number;
+  full_name: string;
+  email: string;
+  created_at?: string;
+}
+
+export interface AuthResponseData {
+  message: string;
+  user: User;
+}
+
+export interface RegisterPayload {
+  full_name: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+

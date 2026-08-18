@@ -2,15 +2,28 @@ FROM python:3.11-slim
 
 WORKDIR /workspace
 
-# Install system requirements
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Install python package requirements in cached layers to prevent WSL out-of-memory crashes
+RUN pip install --no-cache-dir \
+    fastapi==0.129.0 \
+    uvicorn==0.41.0 \
+    pydantic==2.12.5 \
+    pydantic-settings>=2.0.0 \
+    sqlalchemy>=2.0.0 \
+    psycopg2-binary>=2.9.0 \
+    httpx==0.28.1 \
+    pytest==9.1.1 \
+    python-multipart>=0.0.7
 
-# Install python package requirements
-COPY backend/requirements.txt ./backend_requirements.txt
-RUN pip install --no-cache-dir -r backend_requirements.txt
+RUN pip install --no-cache-dir \
+    numpy>=1.25.0 \
+    pandas>=2.0.0 \
+    joblib>=1.3.0
+
+RUN pip install --no-cache-dir \
+    scikit-learn==1.7.2 \
+    xgboost>=2.0.0 \
+    shap>=0.52.0
+
 
 # Copy backend files and auxiliary models/data/src
 COPY backend /workspace/backend
