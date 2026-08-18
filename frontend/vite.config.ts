@@ -12,6 +12,26 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
       },
+      '/predictions': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
+      },
+      '/dashboard': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
+      },
+      '/dataset': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
+      },
+      '/model': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.startsWith('/api/v1') ? path : `/api/v1${path}`
+      },
       '/model/metrics': {
         target: 'http://localhost:8000',
         changeOrigin: true,
